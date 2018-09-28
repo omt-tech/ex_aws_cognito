@@ -302,7 +302,33 @@ defmodule ExAws.CognitoIdp do
   # TODO: change_password
   # TODO: confirm_device
   # TODO: confirm_forgot_password
-  # TODO: confirm_sign_up
+
+  @doc """
+    Confirms registration of a user and handles the existing alias from a previous user.
+
+    For custom attributes, you must prepend the `custom:` prefix to the
+    attribute name. In addition to updating user attributes, this API
+    can also be used to mark phone and email as verified.
+
+    """
+
+    @type confirm_sign_up_opts :: [
+            AnalyticsMetadata: [String.t()],
+            force_alias_creation: boolean,
+            SecretHash: String.t(),
+            UserContextData: String.t()
+          ]
+
+    @spec confirm_sign_up(user_pool_id, username, confirmation_code, confirm_sign_up_opts) :: op
+    def confirm_sign_up(user_pool_id, username, confirmation_code, opts \\ []) do
+      data =
+        opts
+        |> Enum.into(%{user_pool_id: user_pool_id, username: username, confirmation_code: confirmation_code})
+        |> camelize_keys(deep: true)
+
+      request("AdminConfirmSignUp", data)
+    end
+
   # TODO: create_group
   # TODO: create_identity_provider
   # TODO: create_resource_server
