@@ -326,7 +326,7 @@ defmodule ExAws.CognitoIdp do
         |> Enum.into(%{user_pool_id: user_pool_id, username: username, confirmation_code: confirmation_code})
         |> camelize_keys(deep: true)
 
-      request("AdminConfirmSignUp", data)
+      request("ConfirmSignUp", data)
     end
 
   # TODO: create_group
