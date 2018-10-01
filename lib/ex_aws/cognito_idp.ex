@@ -321,15 +321,18 @@ defmodule ExAws.CognitoIdp do
     @type confirm_sign_up_opts :: [
             analytics_metadata: analytics_metadata,
             force_alias_creation: boolean,
-            secret_hash: String.t(),
             user_context_data: user_context_data
           ]
 
-    @spec confirm_sign_up(user_pool_id, username, confirmation_code, confirm_sign_up_opts) :: op
-    def confirm_sign_up(user_pool_id, username, confirmation_code, opts \\ []) do
+    @spec confirm_sign_up(user_pool_id, client_id, client_secret, username, confirmation_code, confirm_sign_up_opts) :: op
+    def confirm_sign_up(user_pool_id, client_id, client_secret, username, confirmation_code, opts \\ []) do
       data =
         opts
-        |> Enum.into(%{user_pool_id: user_pool_id, username: username, confirmation_code: confirmation_code})
+        |> Enum.into(%{user_pool_id: user_pool_id,
+        username: username,
+        confirmation_code: confirmation_code,
+        client_id: client_id,
+        secret_hash: hash_secret(client_secret, username, client_id)})
         |> camelize_keys(deep: true)
 
       request("ConfirmSignUp", data)
