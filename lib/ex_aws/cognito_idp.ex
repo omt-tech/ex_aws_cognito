@@ -458,4 +458,8 @@ defmodule ExAws.CognitoIdp do
     end)
     |> Stream.flat_map(& &1)
   end
+
+  defp hash_secret( client_secret, username, client_id) do
+    secret_hash = :crypto.hmac(:sha256, client_secret, username <> client_id) |> Base.encode64()
+  end
 end
