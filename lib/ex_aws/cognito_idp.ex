@@ -9,6 +9,9 @@ defmodule ExAws.CognitoIdp do
 
   @type user_pool_id :: String.t()
   @type username :: String.t()
+  @type client_id :: String.t()
+  @type password :: String.t()
+  @type client_secret :: String.t()
   @type confirmation_code :: String.t()
   @type op :: ExAws.Operation.JSON.t()
   @type attribute :: %{name: String.t(), value: String.t()}
@@ -405,6 +408,32 @@ defmodule ExAws.CognitoIdp do
   # TODO: set_ui_customization
   # TODO: set_user_settings
   # TODO: sign_up
+
+  @type sign_up_opts :: [
+          analytics_metadata: analytics_metadata,
+          user_attributes: [attribute],
+          user_context_data: user_context_data,
+          validation_data: [attribute]
+        ]
+
+  @doc """
+  Registers the user in the specified user pool and creates a user name, password, and user attributes.
+  """
+  @spec sign_up(user_pool_id, client_id, client_secret, password, username, sign_up_opts) :: op
+  def sign_up(user_pool_id, client_id, client_secret, password, username, opts \\ []) do
+
+    data =
+      opts
+      |> Enum.into(%{user_pool_id: user_pool_id,
+      client_id: client_id,
+      username: username,
+      password: password,
+      secret_hash: hash_secret(client_secret, username, client_id)})
+      |> camelize_keys(deep: true)
+
+    request("SignUp", data)
+  end
+
   # TODO: start_user_import_job
   # TODO: stop_user_import_job
   # TODO: update_device_status
