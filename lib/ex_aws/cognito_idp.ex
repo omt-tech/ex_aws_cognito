@@ -9,6 +9,7 @@ defmodule ExAws.CognitoIdp do
 
   @type user_pool_id :: String.t()
   @type username :: String.t()
+  @type confirmation_code :: String.t()
   @type op :: ExAws.Operation.JSON.t()
   @type attribute :: %{name: String.t(), value: String.t()}
 
@@ -311,12 +312,14 @@ defmodule ExAws.CognitoIdp do
     can also be used to mark phone and email as verified.
 
     """
+    @type analytics_metadata :: %{analytics_endpoint_id: String.t()}
+    @type user_context_data :: %{encoded_data: String.t()}
 
     @type confirm_sign_up_opts :: [
-            AnalyticsMetadata: [String.t()],
+            analytics_metadata: analytics_metadata,
             force_alias_creation: boolean,
-            SecretHash: String.t(),
-            UserContextData: String.t()
+            secret_hash: String.t(),
+            user_context_data: user_context_data
           ]
 
     @spec confirm_sign_up(user_pool_id, username, confirmation_code, confirm_sign_up_opts) :: op
