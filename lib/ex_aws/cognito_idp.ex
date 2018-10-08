@@ -324,15 +324,14 @@ defmodule ExAws.CognitoIdp do
             user_context_data: user_context_data
           ]
 
-    @spec confirm_sign_up(user_pool_id, client_id, client_secret, username, confirmation_code, confirm_sign_up_opts) :: op
-    def confirm_sign_up(user_pool_id, client_id, client_secret, username, confirmation_code, opts \\ []) do
+    @spec confirm_sign_up(user_pool_id, client_id, username, confirmation_code, confirm_sign_up_opts) :: op
+    def confirm_sign_up(user_pool_id, client_id, username, confirmation_code, opts \\ []) do
       data =
         opts
         |> Enum.into(%{user_pool_id: user_pool_id,
         username: username,
         confirmation_code: confirmation_code,
-        client_id: client_id,
-        secret_hash: hash_secret(client_secret, username, client_id)})
+        client_id: client_id})
         |> camelize_keys(deep: true)
 
       request("ConfirmSignUp", data)
@@ -422,16 +421,15 @@ defmodule ExAws.CognitoIdp do
   @doc """
   Registers the user in the specified user pool and creates a user name, password, and user attributes.
   """
-  @spec sign_up(user_pool_id, client_id, client_secret, password, username, sign_up_opts) :: op
-  def sign_up(user_pool_id, client_id, client_secret, password, username, opts \\ []) do
+  @spec sign_up(user_pool_id, client_id, password, username, sign_up_opts) :: op
+  def sign_up(user_pool_id, client_id, password, username, opts \\ []) do
 
     data =
       opts
       |> Enum.into(%{user_pool_id: user_pool_id,
       client_id: client_id,
       username: username,
-      password: password,
-      secret_hash: hash_secret(client_secret, username, client_id)})
+      password: password})
       |> camelize_keys(deep: true)
 
     request("SignUp", data)
@@ -491,7 +489,7 @@ defmodule ExAws.CognitoIdp do
     |> Stream.flat_map(& &1)
   end
 
-  defp hash_secret( client_secret, username, client_id) do
+  def hash_secret(client_secret, username, client_id) do
     secret_hash = :crypto.hmac(:sha256, client_secret, username <> client_id) |> Base.encode64()
   end
 end
