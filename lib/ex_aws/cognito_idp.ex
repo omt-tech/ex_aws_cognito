@@ -15,6 +15,8 @@ defmodule ExAws.CognitoIdp do
   @type confirmation_code :: String.t()
   @type op :: ExAws.Operation.JSON.t()
   @type attribute :: %{name: String.t(), value: String.t()}
+  @type analytics_metadata :: %{analytics_endpoint_id: String.t()}
+  @type user_context_data :: %{encoded_data: String.t()}
 
   @doc """
   Adds additional user attributes to the user pool schema.
@@ -310,9 +312,6 @@ defmodule ExAws.CognitoIdp do
     Allows a user to enter a confirmation code to reset a forgotten password.
 
     """
-    @type analytics_metadata :: %{analytics_endpoint_id: String.t()}
-    @type user_context_data :: %{encoded_data: String.t()}
-
     @type confirm_forgot_password_opts :: [
             analytics_metadata: analytics_metadata,
             user_context_data: user_context_data
@@ -340,9 +339,6 @@ defmodule ExAws.CognitoIdp do
     can also be used to mark phone and email as verified.
 
     """
-    @type analytics_metadata :: %{analytics_endpoint_id: String.t()}
-    @type user_context_data :: %{encoded_data: String.t()}
-
     @type confirm_sign_up_opts :: [
             analytics_metadata: analytics_metadata,
             force_alias_creation: boolean,
@@ -403,9 +399,6 @@ defmodule ExAws.CognitoIdp do
     call ConfirmForgotPassword.
 
     """
-    @type analytics_metadata :: %{analytics_endpoint_id: String.t()}
-    @type user_context_data :: %{encoded_data: String.t()}
-
     @type forgot_password_opts :: [
             analytics_metadata: analytics_metadata,
             user_context_data: user_context_data
