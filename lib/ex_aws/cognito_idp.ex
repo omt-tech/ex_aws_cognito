@@ -305,7 +305,32 @@ defmodule ExAws.CognitoIdp do
 
   # TODO: change_password
   # TODO: confirm_device
-  # TODO: confirm_forgot_password
+
+   @doc """
+    Allows a user to enter a confirmation code to reset a forgotten password.
+
+    """
+    @type analytics_metadata :: %{analytics_endpoint_id: String.t()}
+    @type user_context_data :: %{encoded_data: String.t()}
+
+    @type confirm_forgot_password_opts :: [
+            analytics_metadata: analytics_metadata,
+            user_context_data: user_context_data
+          ]
+
+    @spec confirm_forgot_password(user_pool_id, client_id, username, confirmation_code, password, confirm_forgot_password_opts) :: op
+    def confirm_forgot_password(user_pool_id, client_id, username, confirmation_code, password, opts \\ []) do
+      data =
+        opts
+        |> Enum.into(%{user_pool_id: user_pool_id,
+        username: username,
+        confirmation_code: confirmation_code,
+        password: password,
+        client_id: client_id})
+        |> camelize_keys(deep: true)
+
+      request("ConfirmForgotPassword", data)
+    end
 
   @doc """
     Confirms registration of a user and handles the existing alias from a previous user.
