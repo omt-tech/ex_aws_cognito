@@ -453,7 +453,27 @@ defmodule ExAws.CognitoIdp do
   end
 
   # TODO: list_users_in_group
-  # TODO: resend_confirmation_code
+
+  @doc """
+    Resends the confirmation (for confirmation of registration) to a specific user.
+    """
+    @type resend_confirmation_code_opts :: [
+            analytics_metadata: analytics_metadata,
+            user_context_data: user_context_data
+          ]
+
+    @spec resend_confirmation_code(user_pool_id, client_id, username, resend_confirmation_code_opts) :: op
+    def resend_confirmation_code(user_pool_id, client_id, username, opts \\ []) do
+      data =
+        opts
+        |> Enum.into(%{user_pool_id: user_pool_id,
+        username: username,
+        client_id: client_id})
+        |> camelize_keys(deep: true)
+
+      request("ResendConfirmationCode", data)
+    end
+
   # TODO: respond_to_auth_challenge
   # TODO: set_ui_customization
   # TODO: set_user_settings
