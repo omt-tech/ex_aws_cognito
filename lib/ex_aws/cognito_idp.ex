@@ -17,6 +17,9 @@ defmodule ExAws.CognitoIdp do
   @type attribute :: %{name: String.t(), value: String.t()}
   @type analytics_metadata :: %{analytics_endpoint_id: String.t()}
   @type user_context_data :: %{encoded_data: String.t()}
+  @type challenge_name :: String.t()
+  @type challenge_responses :: [attribute]
+  @type session :: String.t()
 
   @doc """
   Adds additional user attributes to the user pool schema.
@@ -474,7 +477,29 @@ defmodule ExAws.CognitoIdp do
       request("ResendConfirmationCode", data)
     end
 
-  # TODO: respond_to_auth_challenge
+  @doc """
+    Responds to the authentication challenge.
+    https://docs.aws.amazon.com/cognito-user-identity-pools/latest/APIReference/API_RespondToAuthChallenge.html
+    """
+    @type respond_to_auth_challenge_opts :: [
+            analytics_metadata: analytics_metadata,
+            user_context_data: user_context_data
+          ]
+
+    @spec respond_to_auth_challenge(user_pool_id, client_id, challenge_name, session, challenge_responses, respond_to_auth_challenge_opts) :: op
+    def respond_to_auth_challenge(user_pool_id, client_id, challenge_name, session, challenge_responses, opts \\ []) do
+      data =
+        opts
+        |> Enum.into(%{user_pool_id: user_pool_id,
+        client_id: client_id,
+        challenge_name: challenge_name,
+        session: session})
+        |> camelize_keys(deep: true)
+        |> Enum.into(%{challenge_responses: challenge_responses}) |> camelize_keys(deep: false) # We dont want camelize to break things in the challenge_responses.
+
+      request("RespondToAuthChallenge", data)
+    end
+
   # TODO: set_ui_customization
   # TODO: set_user_settings
   # TODO: sign_up
