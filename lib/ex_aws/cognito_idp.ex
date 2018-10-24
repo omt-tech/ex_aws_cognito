@@ -486,16 +486,17 @@ defmodule ExAws.CognitoIdp do
             user_context_data: user_context_data
           ]
 
-    @spec respond_to_auth_challenge(user_pool_id, client_id, challenge_name, session, challenge_responses, respond_to_auth_challenge_opts) :: op
-    def respond_to_auth_challenge(user_pool_id, client_id, challenge_name, session, challenge_responses, opts \\ []) do
+    @spec respond_to_auth_challenge(client_id, challenge_name, session, challenge_responses, respond_to_auth_challenge_opts) :: op
+    def respond_to_auth_challenge(client_id, challenge_name, session, challenge_responses, opts \\ []) do
       data =
         opts
-        |> Enum.into(%{user_pool_id: user_pool_id,
+        |> Enum.into(%{
         client_id: client_id,
         challenge_name: challenge_name,
         session: session})
         |> camelize_keys(deep: true)
-        |> Enum.into(%{challenge_responses: challenge_responses}) |> camelize_keys(deep: false) # We dont want camelize to break things in the challenge_responses.
+        |> Enum.into(%{challenge_responses: challenge_responses})
+        |> camelize_keys(deep: false) # We dont want camelize to break things in the challenge_responses.
 
       request("RespondToAuthChallenge", data)
     end
