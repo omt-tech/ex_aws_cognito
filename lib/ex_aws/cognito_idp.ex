@@ -495,8 +495,7 @@ defmodule ExAws.CognitoIdp do
         challenge_name: challenge_name,
         session: session})
         |> camelize_keys(deep: true)
-        |> Enum.into(%{challenge_responses: challenge_responses})
-        |> camelize_keys(deep: false) # We dont want camelize to break things in the challenge_responses.
+        |> Enum.into(%{"ChallengeResponses": challenge_responses}) # We dont want camelize to break things in the challenge_responses.
 
       request("RespondToAuthChallenge", data)
     end
