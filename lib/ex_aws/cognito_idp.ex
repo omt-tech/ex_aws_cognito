@@ -20,6 +20,7 @@ defmodule ExAws.CognitoIdp do
   @type challenge_name :: String.t()
   @type challenge_responses :: [attribute]
   @type session :: String.t()
+  @type access_token :: String.t()
 
   @doc """
   Adds additional user attributes to the user pool schema.
@@ -308,7 +309,17 @@ defmodule ExAws.CognitoIdp do
     request("AdminUserGlobalSignOut", data)
   end
 
-  # TODO: change_password
+  @spec change_password(access_token, previous_password :: password, proposed_password :: password) :: op
+  def change_password(access_token, previous_password, proposed_password, opts \\ []) do
+    data =
+      opts
+      |> Enum.into(%{access_token: access_token,
+      previous_password: previous_password,
+      proposed_password: proposed_password})
+      |> camelize_keys(deep: true)
+
+      request("ChangePassword", data)
+  end
   # TODO: confirm_device
 
    @doc """
