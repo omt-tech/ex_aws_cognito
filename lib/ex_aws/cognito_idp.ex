@@ -435,10 +435,44 @@ defmodule ExAws.CognitoIdp do
   # TODO: get_group
   # TODO: get_identity_provider_by_identifier
   # TODO: get_ui_customization
-  # TODO: get_user
+
+  @doc """
+  Gets the user associated with the provided access token.
+  """
+  @spec get_user(access_token) :: op
+  def get_user(access_token) do
+    data = %{"AccessToken" => access_token}
+
+    request("GetUser", data)
+  end
+
   # TODO: get_user_attribute_verification_code
   # TODO: global_sign_out
-  # TODO: initiate_auth
+
+   @type initiate_auth_opts :: [
+          analytics_metadata: %{analytics_endpoint_id: String.t()},
+          auth_parameters: %{String.t() => String.t()},
+          client_metadata: %{String.t() => String.t()}
+        ]
+
+  @doc """
+  Initiates the authentication flow, as a user.
+  """
+  @spec initiate_auth(
+          client_id :: String.t(),
+          auth_parameters :: String.t(),
+          auth_flow :: String.t(),
+          initiate_auth_opts
+        ) :: op
+  def initiate_auth(client_id, auth_flow, auth_parameters, opts \\ []) do
+    data =
+      opts
+      |> Enum.into(%{ client_id: client_id, auth_flow: auth_flow, auth_parameters: auth_parameters})
+      |> camelize_keys(deep: false)
+
+    request("InitiateAuth", data)
+  end
+
   # TODO: list_devices
   # TODO: list_groups
   # TODO: list_identity_providers
@@ -545,7 +579,15 @@ defmodule ExAws.CognitoIdp do
   # TODO: update_group
   # TODO: update_identity_provider
   # TODO: update_resource_server
-  # TODO: update_user_attributes
+
+  @spec update_user_attributes(access_token, attributes :: [attribute]) :: op
+  def update_user_attributes(access_token, attributes) do
+    attributes = camelize_keys(attributes)
+    data = %{"AccessToken" => access_token, "UserAttributes" => attributes}
+
+    request("UpdateUserAttributes", data)
+  end
+
   # TODO: update_user_pool
   # TODO: update_user_pool_client
   # TODO: verify_user_attribute
