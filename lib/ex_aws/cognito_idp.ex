@@ -9,8 +9,18 @@ defmodule ExAws.CognitoIdp do
 
   @type user_pool_id :: String.t()
   @type username :: String.t()
+  @type client_id :: String.t()
+  @type password :: String.t()
+  @type client_secret :: String.t()
+  @type confirmation_code :: String.t()
   @type op :: ExAws.Operation.JSON.t()
   @type attribute :: %{name: String.t(), value: String.t()}
+  @type analytics_metadata :: %{analytics_endpoint_id: String.t()}
+  @type user_context_data :: %{encoded_data: String.t()}
+  @type challenge_name :: String.t()
+  @type challenge_responses :: [attribute]
+  @type session :: String.t()
+  @type access_token :: String.t()
 
   @doc """
   Adds additional user attributes to the user pool schema.
@@ -299,10 +309,69 @@ defmodule ExAws.CognitoIdp do
     request("AdminUserGlobalSignOut", data)
   end
 
-  # TODO: change_password
+  @spec change_password(access_token, previous_password :: password, proposed_password :: password) :: op
+  def change_password(access_token, previous_password, proposed_password, opts \\ []) do
+    data =
+      opts
+      |> Enum.into(%{access_token: access_token,
+      previous_password: previous_password,
+      proposed_password: proposed_password})
+      |> camelize_keys(deep: true)
+
+      request("ChangePassword", data)
+  end
   # TODO: confirm_device
-  # TODO: confirm_forgot_password
-  # TODO: confirm_sign_up
+
+   @doc """
+    Allows a user to enter a confirmation code to reset a forgotten password.
+
+    """
+    @type confirm_forgot_password_opts :: [
+            analytics_metadata: analytics_metadata,
+            user_context_data: user_context_data
+          ]
+
+    @spec confirm_forgot_password(user_pool_id, client_id, username, confirmation_code, password, confirm_forgot_password_opts) :: op
+    def confirm_forgot_password(user_pool_id, client_id, username, confirmation_code, password, opts \\ []) do
+      data =
+        opts
+        |> Enum.into(%{user_pool_id: user_pool_id,
+        username: username,
+        confirmation_code: confirmation_code,
+        password: password,
+        client_id: client_id})
+        |> camelize_keys(deep: true)
+
+      request("ConfirmForgotPassword", data)
+    end
+
+  @doc """
+    Confirms registration of a user and handles the existing alias from a previous user.
+
+    For custom attributes, you must prepend the `custom:` prefix to the
+    attribute name. In addition to updating user attributes, this API
+    can also be used to mark phone and email as verified.
+
+    """
+    @type confirm_sign_up_opts :: [
+            analytics_metadata: analytics_metadata,
+            force_alias_creation: boolean,
+            user_context_data: user_context_data
+          ]
+
+    @spec confirm_sign_up(user_pool_id, client_id, username, confirmation_code, confirm_sign_up_opts) :: op
+    def confirm_sign_up(user_pool_id, client_id, username, confirmation_code, opts \\ []) do
+      data =
+        opts
+        |> Enum.into(%{user_pool_id: user_pool_id,
+        username: username,
+        confirmation_code: confirmation_code,
+        client_id: client_id})
+        |> camelize_keys(deep: true)
+
+      request("ConfirmSignUp", data)
+    end
+
   # TODO: create_group
   # TODO: create_identity_provider
   # TODO: create_resource_server
@@ -333,16 +402,77 @@ defmodule ExAws.CognitoIdp do
   # TODO: describe_user_pool_client
   # TODO: describe_user_pool_domain
   # TODO: forget_device
-  # TODO: forgot_password
+
+    @doc """
+    Calling this API causes a message to be sent to the end user with a confirmation code that
+    is required to change the user's password. For the Username parameter, you can use the
+    username or user alias. If a verified phone number exists for the user, the confirmation code
+    is sent to the phone number. Otherwise, if a verified email exists, the confirmation code is
+    sent to the email. If neither a verified phone number nor a verified email exists,
+    InvalidParameterException is thrown. To use the confirmation code for resetting the password,
+    call ConfirmForgotPassword.
+
+    """
+    @type forgot_password_opts :: [
+            analytics_metadata: analytics_metadata,
+            user_context_data: user_context_data
+          ]
+
+    @spec forgot_password(user_pool_id, client_id, username, forgot_password_opts) :: op
+    def forgot_password(user_pool_id, client_id, username, opts \\ []) do
+      data =
+        opts
+        |> Enum.into(%{user_pool_id: user_pool_id,
+        username: username,
+        client_id: client_id})
+        |> camelize_keys(deep: true)
+
+      request("ForgotPassword", data)
+    end
+
   # TODO: get_csv_header
   # TODO: get_device
   # TODO: get_group
   # TODO: get_identity_provider_by_identifier
   # TODO: get_ui_customization
-  # TODO: get_user
+
+  @doc """
+  Gets the user associated with the provided access token.
+  """
+  @spec get_user(access_token) :: op
+  def get_user(access_token) do
+    data = %{"AccessToken" => access_token}
+
+    request("GetUser", data)
+  end
+
   # TODO: get_user_attribute_verification_code
   # TODO: global_sign_out
-  # TODO: initiate_auth
+
+   @type initiate_auth_opts :: [
+          analytics_metadata: %{analytics_endpoint_id: String.t()},
+          auth_parameters: %{String.t() => String.t()},
+          client_metadata: %{String.t() => String.t()}
+        ]
+
+  @doc """
+  Initiates the authentication flow, as a user.
+  """
+  @spec initiate_auth(
+          client_id :: String.t(),
+          auth_parameters :: String.t(),
+          auth_flow :: String.t(),
+          initiate_auth_opts
+        ) :: op
+  def initiate_auth(client_id, auth_flow, auth_parameters, opts \\ []) do
+    data =
+      opts
+      |> Enum.into(%{ client_id: client_id, auth_flow: auth_flow, auth_parameters: auth_parameters})
+      |> camelize_keys(deep: false)
+
+    request("InitiateAuth", data)
+  end
+
   # TODO: list_devices
   # TODO: list_groups
   # TODO: list_identity_providers
@@ -371,18 +501,93 @@ defmodule ExAws.CognitoIdp do
   end
 
   # TODO: list_users_in_group
-  # TODO: resend_confirmation_code
-  # TODO: respond_to_auth_challenge
+
+  @doc """
+    Resends the confirmation (for confirmation of registration) to a specific user.
+    """
+    @type resend_confirmation_code_opts :: [
+            analytics_metadata: analytics_metadata,
+            user_context_data: user_context_data
+          ]
+
+    @spec resend_confirmation_code(user_pool_id, client_id, username, resend_confirmation_code_opts) :: op
+    def resend_confirmation_code(user_pool_id, client_id, username, opts \\ []) do
+      data =
+        opts
+        |> Enum.into(%{user_pool_id: user_pool_id,
+        username: username,
+        client_id: client_id})
+        |> camelize_keys(deep: true)
+
+      request("ResendConfirmationCode", data)
+    end
+
+  @doc """
+    Responds to the authentication challenge.
+    https://docs.aws.amazon.com/cognito-user-identity-pools/latest/APIReference/API_RespondToAuthChallenge.html
+    """
+    @type respond_to_auth_challenge_opts :: [
+            analytics_metadata: analytics_metadata,
+            user_context_data: user_context_data
+          ]
+
+    @spec respond_to_auth_challenge(client_id, challenge_name, session, challenge_responses, respond_to_auth_challenge_opts) :: op
+    def respond_to_auth_challenge(client_id, challenge_name, session, challenge_responses, opts \\ []) do
+      data =
+        opts
+        |> Enum.into(%{
+        client_id: client_id,
+        challenge_name: challenge_name,
+        session: session})
+        |> camelize_keys(deep: true)
+        |> Enum.into(%{"ChallengeResponses": challenge_responses}) # We dont want camelize to break things in the challenge_responses.
+
+      request("RespondToAuthChallenge", data)
+    end
+
   # TODO: set_ui_customization
   # TODO: set_user_settings
   # TODO: sign_up
+
+  @type sign_up_opts :: [
+          analytics_metadata: analytics_metadata,
+          user_attributes: [attribute],
+          user_context_data: user_context_data,
+          validation_data: [attribute]
+        ]
+
+  @doc """
+  Registers the user in the specified user pool and creates a user name, password, and user attributes.
+  """
+  @spec sign_up(user_pool_id, client_id, password, username, sign_up_opts) :: op
+  def sign_up(user_pool_id, client_id, password, username, opts \\ []) do
+
+    data =
+      opts
+      |> Enum.into(%{user_pool_id: user_pool_id,
+      client_id: client_id,
+      username: username,
+      password: password})
+      |> camelize_keys(deep: true)
+
+    request("SignUp", data)
+  end
+
   # TODO: start_user_import_job
   # TODO: stop_user_import_job
   # TODO: update_device_status
   # TODO: update_group
   # TODO: update_identity_provider
   # TODO: update_resource_server
-  # TODO: update_user_attributes
+
+  @spec update_user_attributes(access_token, attributes :: [attribute]) :: op
+  def update_user_attributes(access_token, attributes) do
+    attributes = camelize_keys(attributes)
+    data = %{"AccessToken" => access_token, "UserAttributes" => attributes}
+
+    request("UpdateUserAttributes", data)
+  end
+
   # TODO: update_user_pool
   # TODO: update_user_pool_client
   # TODO: verify_user_attribute
@@ -428,5 +633,9 @@ defmodule ExAws.CognitoIdp do
         end
     end)
     |> Stream.flat_map(& &1)
+  end
+
+  def hash_secret(client_secret, username, client_id) do
+    secret_hash = :crypto.hmac(:sha256, client_secret, username <> client_id) |> Base.encode64()
   end
 end
